@@ -785,53 +785,47 @@ library.createSlider = function(option, parent)
         end
     end)
 
-    function SetValue(self, value, nocallback)
-        -- Ensure value is a number, defaulting to 0 if not
-        if type(value) ~= "number" then
-            value = 0
+    function option:SetValue(value, nocallback)
+        -- Ensure value is a number; set to 0 if not
+        if type(value) ~= "number" then 
+            value = 0 
         end
-    
-        -- Round the value based on option.float (assuming option.float is defined)
+        
+        -- Round the value to the specified decimal places
         value = library.round(value, option.float)
-    
-        -- Clamp the value between self.min and self.max
+        
+        -- Clamp the value within the defined range [self.min, self.max]
         value = math.clamp(value, self.min, self.max)
-    
-        -- Calculate fill size based on value
-        local fillSize
+        
+        -- Update the UI based on the value and range
         if self.min >= 0 then
-            fillSize = UDim2.new((value - self.min) / (self.max - self.min), 0, 1, 0)
-            option.fill:TweenSize(fillSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.05, true)
+            option.fill:TweenSize(UDim2.new((value - self.min) / (self.max - self.min), 0, 1, 0), "Out", "Quad", 0.05, true)
         else
-            local fillPosition = UDim2.new((0 - self.min) / (self.max - self.min), 0, 0, 0)
-            option.fill:TweenPosition(fillPosition, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.05, true)
-    
-            fillSize = UDim2.new(value / (self.max - self.min), 0, 1, 0)
-            option.fill:TweenSize(fillSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+            option.fill:TweenPosition(UDim2.new((0 - self.min) / (self.max - self.min), 0, 0, 0), "Out", "Quad", 0.05, true)
+            option.fill:TweenSize(UDim2.new(value / (self.max - self.min), 0, 1, 0), "Out", "Quad", 0.1, true)
         end
-    
-        -- Update library flags and internal value
+        
+        -- Update the value in the library flags and self object
         library.flags[self.flag] = value
         self.value = value
-    
-        -- Update option title text
-        local titleText = (option.text == "nil" and "" or option.text .. ": ") .. value .. option.suffix
-        option.title.Text = titleText
-    
-        -- Execute callback unless disabled by nocallback
+        
+        -- Update the option title text
+        option.title.Text = (option.text == "nil" and "" or option.text .. ": ") .. tostring(option.value) .. option.suffix
+        
+        -- Trigger callback if nocallback is not true
         if not nocallback then
             self.callback(value)
         end
     end
     
-    -- Usage example with delay
+    -- Delayed update example
     delay(1, function()
+        -- Check if the library exists before updating the option
         if library then
             option:SetValue(option.value)
         end
     end)
     
-
 
 library.createList = function(option, parent)
     option.hasInit = true
